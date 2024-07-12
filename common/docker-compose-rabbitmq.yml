@@ -1,0 +1,14 @@
+version: "2"
+services:
+  rabbitmq:
+    image: rabbitmq:3.7.17-management
+    hostname: hostname-rabbitmq
+    volumes:
+      - "./rabbitmq/data:/var/lib/rabbitmq"
+      - "./rabbitmq/log:/var/log/rabbitmq/log"
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
