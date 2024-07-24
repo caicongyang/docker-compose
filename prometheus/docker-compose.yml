@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - /home/prometheus:/etc/prometheus
+    command:
+      - /bin/prometheus
