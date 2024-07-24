@@ -1,0 +1,194 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "rules/*.yml"
+# - "first_rules.yml"
+# - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+# The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+#    static_configs:
+#    - targets: ['localhost:9090']  # 如果对本机node_exporter监控，加入,'localhost:9100'
+    file_sd_configs:
+      - files: ['/home/prometheus/*.yml']
+        refresh_interval: 5s
+
+  - job_name: 'dev'
+  #重写了全局抓取间隔时间，由15秒重写成5秒。
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.2.45:9100']
+
+
+  - job_name: 'prod'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.0.131:9100','192.168.0.2:9100','192.168.0.37:9100','192.168.0.133:9100','192.168.0.111:9100','192.168.0.63:9100','192.168.0.108:9100','192.168.0.51:9100','192.168.0.118:9100']
+
+
+  - job_name: 'prd_redis'
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - redis://192.168.0.133:8000
+      - redis://192.168.0.133:8001
+      - redis://192.168.0.111:7000
+      - redis://192.168.0.111:7001
+      - redis://192.168.0.63:9000
+      - redis://192.168.0.63:9001
+    metrics_path: /scrape
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 192.168.0.111:59121
+
+  - job_name: 'prd_rabbitmq'
+    static_configs:
+    - targets: ['192.168.0.131:9099']
+      labels:
+        instance: Prd_RabbitMQ-192.168.0.131
+    - targets: ['192.168.0.2:9099']
+      labels:
+        instance: Prd_RabbitMQ-192.168.0.2
+
+  - job_name: 'prd_mongodb'
+    static_configs:
+    - targets: ['192.168.0.131:9216']
+      labels:
+        instance: Prd_Mongodb-192.168.0.131
+    - targets: ['192.168.0.2:9216']
+      labels:
+        instance: Prd_Mongodb-192.168.0.2
+    - targets: ['192.168.0.37:9216']
+      labels:
+        instance: Prd_Mongodb-192.168.0.37
+
+  - job_name: 'dev_docker'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.2.45:8899']
+
+  - job_name: 'sit_docker'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.2.36:8899']
+
+  - job_name: 'uat_zookeeper'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.2.38:9141','192.168.2.29:9141','192.168.2.48:9141']
+    
+  - job_name: 'tcp_connect'
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets: ['192.168.2.38:3306','192.168.2.36:9200']
+        labels:
+          instance: 'port_status'
+          group: 'tcp'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 10.210.13.51:9098
+
+  - job_name: 'web_status'
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: ['https://www.caicongyang.com']
+        labels:
+          instance: user_status
+          group: 'web'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 10.210.13.51:9098  
+
+  - job_name: 'prd_zookeeper'
+    static_configs:
+    - targets: ['192.168.0.133:9143']
+      labels:
+        instance: 192.168.0.133
+    - targets: ['192.168.0.111:9143']
+      labels:
+        instance: 192.168.0.111
+    - targets: ['192.168.0.63:9143']
+      labels:
+        instance: 192.168.0.63
+
+  - job_name: 'wms_redis'
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - redis://192.168.0.60:7000
+      - redis://192.168.0.60:7001
+      - redis://192.168.0.22:7002
+      - redis://192.168.0.22:7003
+      - redis://192.168.0.17:7004
+      - redis://192.168.0.17:7005
+    metrics_path: /scrape
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 192.168.0.60:59121
+
+  - job_name: minio-job
+    bearer_token: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwcm9tZXRoZXVzIiwic3ViIjoibWluaW9hZG1pbiIsImV4cCI6NDg1MTE5NjMyOX0.wZPJzGE5ajsVV4UGezn2vVjglaLj0KgtAo-V_zPVwLHw_Nu0oCWa1cBgdCjandpNUbDnwJzwtvxmuEFfQz8Oxg
+    metrics_path: /minio/v2/metrics/cluster
+    scheme: http
+    static_configs:
+    - targets: ['192.168.0.24:9000']
+
+  - job_name: 'wms-rocketmq'
+    static_configs:
+    - targets: ['192.168.0.6:5557']
+
+  - job_name: 'wms-nacos'
+    metrics_path: '/nacos/actuator/prometheus'
+    static_configs:
+      - targets:
+         - 192.168.0.104:8848
+         - 192.168.0.119:8848
+         - 192.168.0.130:8848
+
+  - job_name: 'wms-es'
+    metrics_path: '/metrics'
+    static_configs:
+    - targets: ['192.168.0.19:9555']
+      labels:
+        instance: 192.168.0.19:9555

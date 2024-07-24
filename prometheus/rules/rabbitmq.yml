@@ -1,0 +1,34 @@
+groups:
+- name: Rabbitmq
+  rules:
+  - alert: Rabbitmq-down
+    expr: rabbitmq_up{job='prd_rabbitmq'} != 1
+    labels:
+      status: WARN
+      team: Rabbitmq_monitor
+    annotations:
+      description: "Instance: {{ $labels.instance }} is Down ! ! !"
+      value: '{{ $value }}'
+      summary:  "The host node is down"
+- name: Rabbitmq disk free limit 
+  rules:
+  - alert: Rabbitmq disk free limit   status
+    expr: rabbitmq_node_disk_free{job='prd_rabbitmq'} / 1024 / 1024  <= rabbitmq_node_disk_free_limit{job='prd_rabbitmq'} / 1024 / 1024 + 200
+    labels:
+      status: WARN
+      team: Rabbitmq_monitor
+    annotations:
+      description: "Instance: {{ $labels.instance }} the rmq free disk is to low ! ! !"
+      value: '{{ $value }} MB'
+      summary:  "The rmq free disk too low"
+- name: RabbitMQ-内存使用>3096
+  rules:
+  - alert: RabbitMQ-内存使用>3096   status
+    expr: rabbitmq_node_mem_used{job='prd_rabbitmq',self="1"} /1024 /1024 > 3096
+    labels:
+      status: High
+      team: Rabbitmq_monitor
+    annotations:
+      description: "Instance: {{ $labels.instance }} the rabbitmq use memory is to High ! ! !"
+      value: '{{ $value }} MB'
+      summary:  "the rabbitmq use memory is to High"

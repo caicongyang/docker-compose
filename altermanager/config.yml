@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 1m
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+  wechat_api_corp_id: 'wwf178d7d01b37a0b1'      
+  wechat_api_secret: '8sbytREizD0NO0CuByYqZyF82oVokUqyI0I1-FAbh1g'     
+templates:
+  - '/etc/alertmanager/template/wechat.tmpl'
+route:
+  receiver: 'wechat'
+  group_by: ['env','instance','type','group','job','alertname']
+  group_wait: 10s      
+  group_interval: 10s   
+  repeat_interval: 15m
+#  receiver: 'email'
+receivers:
+- name: 'wechat'
+  wechat_configs:
+  - send_resolved: true
+    message: '{{ template "wechat.default.message" . }}'
+    to_party: '3808'          
+    agent_id: '1000110'
+    api_secret: '8sbytREiz-xxxxxxxxxxxxx-FAbh1g'

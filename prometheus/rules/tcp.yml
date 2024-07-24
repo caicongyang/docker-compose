@@ -1,0 +1,12 @@
+groups:
+- name: tcp_connect
+  rules:
+  - alert: ping存活
+    expr: probe_success == 0
+    for: 1m
+    labels:
+      user: root
+      serverity: warning
+    annotations:
+      summary: "{{$labels.mountpoint}} 不能访问"
+      description: "{{ $labels.instance }} 不能访问"
